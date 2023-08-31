@@ -37,5 +37,11 @@ pipeline {
                 sh "sudo docker run -p 8090:8080 ikedi/demo:${BUILD_NUMBER}"
             }
         }
+
+        stage(' done ') {
+                    steps {
+               echo "done deploying application"
+                    }
+                }
     }
 }

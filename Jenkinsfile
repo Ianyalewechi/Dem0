@@ -33,6 +33,14 @@ pipeline {
         }
 
         stage('Run the Application') {
+                     steps {
+                         sh "sudo kill -9 $(sudo lsof -t -i:8090)"
+                     }
+                 }
+
+
+
+        stage('Run the Application') {
             steps {
                 sh "sudo docker run -itd -p 8090:8080 ikedi/demo:${BUILD_NUMBER}"
             }

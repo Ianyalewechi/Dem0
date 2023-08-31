@@ -14,27 +14,27 @@ pipeline {
 
         stage('Build the Docker Image') {
             steps {
-                sh "docker build -t ikedi/demo:${BUILD_NUMBER} ."
+                sh "sudo docker build -t ikedi/demo:${BUILD_NUMBER} ."
             }
         }
 
         stage('Login to Docker ECR') {
             steps {
                 withCredentials([string(credentialsId: 'DockerId', variable: 'Dockerpwd')]) {
-                    sh "docker login -u ikedi -p ${Dockerpwd}"
+                    sh "sudo docker login -u ikedi -p ${Dockerpwd}"
                 }
             }
         }
 
         stage('Push the Docker Image to Docker ECR') {
             steps {
-                sh "docker push ikedi/demo:${BUILD_NUMBER}"
+                sh "sudo docker push ikedi/demo:${BUILD_NUMBER}"
             }
         }
 
         stage('Run the Application') {
             steps {
-                sh "docker run -p 8080:8080 ikedi/demo:${BUILD_NUMBER}"
+                sh "sudo docker run -p 8080:8080 ikedi/demo:${BUILD_NUMBER}"
             }
         }
     }

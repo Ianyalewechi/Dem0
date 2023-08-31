@@ -34,7 +34,7 @@ pipeline {
 
         stage('Run the Application') {
             steps {
-                sh "sudo docker run -p 8090:8080 ikedi/demo:${BUILD_NUMBER}"
+                sh "sudo docker run -itd -p 8090:8080 ikedi/demo:${BUILD_NUMBER}"
             }
         }
 

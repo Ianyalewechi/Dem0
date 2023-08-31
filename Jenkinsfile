@@ -33,23 +33,18 @@ pipeline {
         }
 
         stage('Run the Application') {
-                     steps {
-                         sh "sudo kill -9 $(sudo lsof -t -i:8090)"
-                     }
-                 }
-
-
-
-        stage('Run the Application') {
             steps {
+                // Kill any process occupying port 8090
+                sh "sudo kill -9 \$(sudo lsof -t -i:8090)"
+                // Run the Docker container
                 sh "sudo docker run -itd -p 8090:8080 ikedi/demo:${BUILD_NUMBER}"
             }
         }
 
-        stage(' done ') {
-                    steps {
-               echo "done deploying application"
-                    }
-                }
+        stage('Completion') {
+            steps {
+                echo "done deploying application"
+            }
+        }
     }
 }

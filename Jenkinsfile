@@ -1,50 +1,61 @@
 pipeline {
     agent any
 
-    tools {
-        maven "3.8.5"
+    tool{
+        jdk 'jdk17'
+
+        maven 'maven3'
+
+        environment {
+
+            SCANNER_HOME = tool 'sonar-scanner'
+        }
+
     }
 
     stages {
-        stage('Build the application') {
-            steps {
-                sh "mvn clean install"
+    stage('Get Checkout') {
+                steps {
+                    git branch: 'main', url: 'https://github.com/Ianyalewechi/Javanow.git'
             }
-        }
+            }
+              stage('Compile')
 
-        stage('Build the Docker Image') {
-            steps {
-                sh "sudo docker build -t ikedi/demo:${BUILD_NUMBER} ."
-            }
-        }
+                         {
+                        steps {
+                            sh "mvn complie"
+                        }
+                         }
+             stage('Test') {
+                        steps {
+                            sh "mvn test -DskipTest =true"
+                        }
+                        }
+             stage('OWASP Sacn') {
+                         steps {
+                             dependencyCheck additionalArguments: '--scan ./',odcInstallation:'DC'
+                              dependencyCheckPublisher pattern: '**/dependency-check-report.xm'
 
-        stage('Login to Docker ECR') {
-            steps {
-                withCredentials([string(credentialsId: 'DockerId', variable: 'Dockerpwd')]) {
-                    sh "sudo docker login -u ikedi -p ${Dockerpwd}"
-                }
-            }
-        }
+                          }
+                          }
+             stage('Trivy FS') {
+                         steps {
+                             sh "trivy fs ."
+                         }
+                         }
+             stage('sonarqube analysis') {
+                          steps {
+                              withSonarQubeEnv(sonar) {
+                                  sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Javanow\
+                                  -Dsonar.projectkey=Javanow -Dsonar.java.binaries=.'''
+                          }
+                          }
+                stage('Build'){
+                            steps {
+                               sh "mvn package -DskipTests=true ."
+                           }
+                       }
 
-        stage('Push the Docker Image to Docker ECR') {
-            steps {
-                sh "sudo docker push ikedi/demo:${BUILD_NUMBER}"
-            }
-        }
 
-        stage('Run the Application') {
-            steps {
-                // Kill any process occupying port 8090
-                //sh "sudo kill -9 \$(sudo lsof -t -i:8090)"
-                // Run the Docker container
-                sh "sudo docker run -itd -p 8079:8080 ikedi/demo:${BUILD_NUMBER}"
-            }
-        }
-
-        stage('Completion') {
-            steps {
-                echo "done deploying application"
-            }
-        }
-    }
+       }
 }
